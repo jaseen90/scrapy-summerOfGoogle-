@@ -1,0 +1,44 @@
+# -*- coding: utf-8 -*-
+from scrapy.contrib.spiders import CrawlSpider, Rule
+from scrapy.contrib.linkextractors.sgml import BaseSgmlLinkExtractor
+from scrapy.selector import HtmlXPathSelector
+from googlecode.items import GooglecodeItem
+from scrapy.http import Request
+import json
+sonraki=''
+year=None
+
+class CodeSpider(CrawlSpider):
+    name = "code"
+    allowed_domains = ["google-melange.com"]
+    """start_urls = (
+        'http://www.google-melange.com/gsoc/org/list/public/google/gsoc2009',
+    )
+    """
+    """
+    kullanisi scrapy crawl code -o data2011.json -a year=2011
+    """
+
+    def __init__(self,year, *args, **kwargs):
+        globals()['year'] =year
+        super(CodeSpider, self).__init__(*args, **kwargs)
+        self.start_urls = ['http://www.google-melange.com/gsoc/org/list/public/google/gsoc%s' % year]
+
+    def parse(self, response):
+        url = "https://www.google-melange.com/gsoc/org/list/public/google/gsoc"+year+"?fmt=json&PageSpeed=noscript"
+        #print "degişimi görelim :  " + sonraki
+        return Request(url, callback=self.parse_stores)
+
+    def parse_stores(self, response): # json yakalayıp parse ediyor.
+        data = json.loads(response.body)
+        for store in data['data'][sonraki]:
+            yield GooglecodeItem(
+                ideas = store["columns"]['ideas'],
+                org_id = store["columns"]['org_id'],
+                key = store["columns"]['key'],
+                tag = store["columns"]['tags'],
+                name = store["columns"]['name'],)
+        global sonraki
+        sonraki = data['next']
+        base_url = "https://www.google-melange.com/gsoc/org/list/public/google/gsoc"+year+"?fmt=json&start=%s&PageSpeed=noscript"
+        yield Request(base_url % sonraki, callback=self.parse_stores)
