@@ -59,12 +59,8 @@ class CodeSpider(CrawlSpider):
             """
             yield GooglecodeItem(
                 project_name = store["columns"]["title"]
-                #project_link="yasin"
                 #project_link = store["operations"]["row"]["link"]
             )
-
-            a["data"][""][2]["operations"]["row"]["link"]   linkler için json
-
             """
             #global pro_name
             pro_name = store["columns"]["title"]
@@ -89,5 +85,4 @@ class CodeSpider(CrawlSpider):
         basliks=hxs.select('//h1[contains(@id,"project-page-title")]/text()').extract()
         yield GooglecodeItem(description = descriptions,
                             title = basliks
-                            #project_name = pro_name,
                             )
