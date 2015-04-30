@@ -29,24 +29,26 @@ class CodeSpider(CrawlSpider):
     def parse_stores(self, response): # json yakalayıp parse ediyor.
         data = json.loads(response.body)
         for store in data['data'][sonraki]:
+
             global org_id,keys,tags,names,ideas
             org_id = store["columns"]['org_id']
+            """
             keys = store["columns"]['key']
             tags = store["columns"]["tags"]
             names = store["columns"]['name']
             ideas = store["columns"]['ideas']
-
-            sec_url="http://www.google-melange.com/gsoc/org2/google/gsoc"+year+"/"+org_id+"?fmt=json&limit=100&idx=0&_=1430396371908"
-            yield Request(sec_url,callback=self.secparse)
             """
+            sec_url="http://www.google-melange.com/gsoc/org2/google/gsoc"+year+"/"+org_id+"?fmt=json&limit=100&idx=0&_=1430396371908"
+
             yield GooglecodeItem(
-                ideas = store["columns"]['ideas'],
+                idea = store["columns"]['ideas'],
                 org_id = store["columns"]['org_id'],
                 key = store["columns"]['key'],
                 tag = store["columns"]['tags'],
                 name = store["columns"]['name'],
                 )
-            """
+
+            yield Request(sec_url,callback=self.secparse)
         global sonraki
         sonraki = data['next']
         if(sonraki!="done"):
@@ -56,9 +58,9 @@ class CodeSpider(CrawlSpider):
     def secparse(self, response):
         data = json.loads(response.body)
         for store in data['data']['']:
-            """
+
             yield GooglecodeItem(
-                project_name = store["columns"]["title"]
+                project_name = store["columns"]["title"],
                 #project_link = store["operations"]["row"]["link"]
             )
             """
@@ -71,8 +73,7 @@ class CodeSpider(CrawlSpider):
                                  tag = tags,
                                  name = names,
                                  idea = ideas)
-
-
+            """
             link = store["operations"]["row"]["link"]
             #print link
             description_url="http://www.google-melange.com%s"
