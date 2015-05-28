@@ -22,4 +22,6 @@ class GooglecodeItem(Item):
 
     description= Field()
     title= Field()
+
+    deneme= Field()
     #tags = Field()

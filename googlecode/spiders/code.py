@@ -19,7 +19,6 @@ class CodeSpider(CrawlSpider):
         globals()['year'] =year
         super(CodeSpider, self).__init__(*args, **kwargs)
         self.start_urls = ['http://www.google-melange.com/gsoc/org/list/public/google/gsoc%s' % year]
-    #rules = [Rule(BaseSgmlLinkExtractor(allow=['/gsoc/org/list/public/google/gsoc2009/.*.html']), 'parse')]
 
     def parse(self, response):
         url = "https://www.google-melange.com/gsoc/org/list/public/google/gsoc"+year+"?fmt=json&PageSpeed=noscript"
@@ -29,26 +28,20 @@ class CodeSpider(CrawlSpider):
     def parse_stores(self, response): # json yakalayıp parse ediyor.
         data = json.loads(response.body)
         for store in data['data'][sonraki]:
-
-            global org_id,keys,tags,names,ideas
+            item=GooglecodeItem()
+            #global org_id,keys,tags,names,ideas
             org_id = store["columns"]['org_id']
-            """
-            keys = store["columns"]['key']
-            tags = store["columns"]["tags"]
-            names = store["columns"]['name']
-            ideas = store["columns"]['ideas']
-            """
             sec_url="http://www.google-melange.com/gsoc/org2/google/gsoc"+year+"/"+org_id+"?fmt=json&limit=100&idx=0&_=1430396371908"
-
+            yield Request(sec_url,callback=self.secparse)
+            #dic = {'idea':store["columns"]['ideas'],'org_id': store["columns"]['org_id']}
+            #print dic
             yield GooglecodeItem(
                 idea = store["columns"]['ideas'],
                 org_id = store["columns"]['org_id'],
                 key = store["columns"]['key'],
                 tag = store["columns"]['tags'],
-                name = store["columns"]['name'],
-                )
-
-            yield Request(sec_url,callback=self.secparse)
+                name = store["columns"]['name']
+                )  
         global sonraki
         sonraki = data['next']
         if(sonraki!="done"):
@@ -58,22 +51,6 @@ class CodeSpider(CrawlSpider):
     def secparse(self, response):
         data = json.loads(response.body)
         for store in data['data']['']:
-
-            yield GooglecodeItem(
-                project_name = store["columns"]["title"],
-                #project_link = store["operations"]["row"]["link"]
-            )
-            """
-            #global pro_name
-            pro_name = store["columns"]["title"]
-
-            yield GooglecodeItem(org_id=org_id,
-                                 project_name = pro_name,
-                                 key = keys,
-                                 tag = tags,
-                                 name = names,
-                                 idea = ideas)
-            """
             link = store["operations"]["row"]["link"]
             #print link
             description_url="http://www.google-melange.com%s"
